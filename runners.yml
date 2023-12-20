@@ -1,0 +1,21 @@
+---
+- hosts: appserver
+
+  tasks:
+    - name: Create actions-runner folder
+      ansible.builtin.file:
+        path: actions-runner
+        state: directory
+        mode: '0755'
+
+    - name: Download the latest runner package
+      ansible.builtin.get_url:
+        url: https://github.com/actions/runner/releases/download/v2.311.0/actions-runner-linux-x64-2.311.0.tar.gz
+        dest: ~/actions-runner/actions-runner-linux-x64-2.311.0.tar.gz
+        mode: '0644'
+
+    - name: Extract the installer
+      ansible.builtin.unarchive:
+        src: ~/actions-runner/actions-runner-linux-x64-2.311.0.tar.gz
+        dest: ~/actions-runner
+        remote_src: yes
