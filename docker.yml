@@ -1,0 +1,28 @@
+---
+- hosts: appserver
+  become: true
+
+  tasks:
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Install Docker Compose
+      apt:
+        name: docker-compose
+        state: present
+        update_cache: yes
+
+    - name: pull image
+      docker_image:
+        name: martin87gafe/byta:latest
+        source: pull
+
+    - name: run container
+      docker_container:
+        name: byta_container
+        image: martin87gafe/byta:latest
+        ports:
+          - "5000:80"
