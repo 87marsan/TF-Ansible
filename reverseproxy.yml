@@ -1,0 +1,40 @@
+---
+- name: Install nginx
+  hosts: webbserver
+  become: yes
+  tasks:
+    - name: Update APT package cache
+      apt:
+        update_cache: yes
+
+    - name: Get appserver IP
+      set_fact:
+        appserver_ip: "{{ hostvars['app-server']['ansible_host'] }}"
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Create Nginx configuration file
+      copy:
+        content: |
+          server {
+              listen 80 default_server;
+              location / {
+                  proxy_pass http://{{ appserver_ip }}:5000;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection keep-alive;
+                  proxy_set_header Host $host;
+                  proxy_cache_bypass $http_upgrade;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+              }
+          }
+        dest: /etc/nginx/sites-available/default
+
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
